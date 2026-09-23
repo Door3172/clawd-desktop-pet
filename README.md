@@ -8,6 +8,14 @@ doing: typing while Claude works, celebrating when it finishes, and waving at yo
 
 Supports **English** and **繁體中文** (auto-detected, switchable any time).
 
+**Works everywhere you use Claude Code:**
+
+| Where you run Claude Code | Supported |
+| --- | --- |
+| Claude desktop app (Code tab) | ✅ |
+| Claude Code CLI in a terminal (Windows Terminal, PowerShell, cmd…) | ✅ |
+| Claude Code CLI inside an editor (VS Code, Cursor, JetBrains IDEs…) | ✅ |
+
 ## Install
 
 In Claude Code:
@@ -18,7 +26,6 @@ In Claude Code:
 ```
 
 Requirements: **Windows**, Node.js, and Python 3 with tkinter (included in the standard Windows installer).
-Works with both the Claude Code CLI (in any terminal) and the Claude desktop app.
 
 ## Two skins (right-click → Skin)
 
