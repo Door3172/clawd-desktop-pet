@@ -2437,6 +2437,102 @@ def _proc_is_claude(pid):
     return ok
 
 
+# Walking up from a Claude Code process stops at these, so e.g. Explorer never counts as "Claude"
+_HOST_STOP = {'explorer.exe', 'svchost.exe', 'services.exe', 'wininit.exe', 'winlogon.exe', 'sihost.exe',
+              'runtimebroker.exe', 'userinit.exe', 'taskhostw.exe', 'dllhost.exe', 'system', 'smss.exe',
+              'csrss.exe', 'lsass.exe'}
+# Terminals and editors that can host the Claude Code CLI
+_TERMINALS = {'windowsterminal.exe', 'openconsole.exe', 'conhost.exe', 'cmd.exe', 'powershell.exe', 'pwsh.exe',
+              'wezterm-gui.exe', 'alacritty.exe', 'mintty.exe', 'hyper.exe', 'tabby.exe', 'warp.exe',
+              'code.exe', 'code - insiders.exe', 'cursor.exe', 'windsurf.exe', 'zed.exe', 'idea64.exe',
+              'pycharm64.exe', 'webstorm64.exe', 'rider64.exe', 'goland64.exe', 'clion64.exe', 'phpstorm64.exe'}
+_hosts_cache = {'t': 0.0, 'hosts': frozenset(), 'names': {}, 'cli': False}
+
+
+def _proc_path(pid):
+    from ctypes import wintypes
+    k = ctypes.windll.kernel32
+    k.OpenProcess.restype = wintypes.HANDLE
+    k.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    k.CloseHandle.argtypes = [wintypes.HANDLE]
+    h = k.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+    if not h:
+        return ''
+    try:
+        buf = ctypes.create_unicode_buffer(1024)
+        n = wintypes.DWORD(1024)
+        return buf.value.lower() if k.QueryFullProcessImageNameW(h, 0, buf, ctypes.byref(n)) else ''
+    finally:
+        k.CloseHandle(h)
+
+
+def _is_desktop_app_path(p):
+    return 'windowsapps' in p or 'anthropicclaude' in p
+
+
+def _scan_claude():
+    """Refresh (at most every 2 s) the PIDs of every claude.exe plus the processes it runs inside (shell,
+    terminal, editor...), and whether a standalone Claude Code CLI is running."""
+    c = _hosts_cache
+    now = time.time()
+    if now - c['t'] < 2.0:
+        return c
+    hosts, names, cli = set(), {}, False
+    try:
+        from ctypes import wintypes
+
+        class PROCESSENTRY32W(ctypes.Structure):
+            _fields_ = [('dwSize', wintypes.DWORD), ('cntUsage', wintypes.DWORD),
+                        ('th32ProcessID', wintypes.DWORD), ('th32DefaultHeapID', ctypes.c_size_t),
+                        ('th32ModuleID', wintypes.DWORD), ('cntThreads', wintypes.DWORD),
+                        ('th32ParentProcessID', wintypes.DWORD), ('pcPriClassBase', ctypes.c_long),
+                        ('dwFlags', wintypes.DWORD), ('szExeFile', ctypes.c_wchar * 260)]
+        k = ctypes.windll.kernel32
+        k.CreateToolhelp32Snapshot.restype = wintypes.HANDLE
+        k.CloseHandle.argtypes = [wintypes.HANDLE]
+        snap = k.CreateToolhelp32Snapshot(0x2, 0)  # TH32CS_SNAPPROCESS
+        procs = {}
+        try:
+            e = PROCESSENTRY32W()
+            e.dwSize = ctypes.sizeof(e)
+            ok = k.Process32FirstW(snap, ctypes.byref(e))
+            while ok:
+                procs[e.th32ProcessID] = (e.th32ParentProcessID, e.szExeFile.lower())
+                ok = k.Process32NextW(snap, ctypes.byref(e))
+        finally:
+            k.CloseHandle(snap)
+        names = {pid: exe for pid, (_, exe) in procs.items()}
+        for pid, (ppid, exe) in procs.items():
+            if exe != 'claude.exe':
+                continue
+            # A CLI started from a terminal: its parent isn't the desktop app, and it isn't the desktop app itself
+            if procs.get(ppid, (0, ''))[1] != 'claude.exe' and not _is_desktop_app_path(_proc_path(pid)):
+                cli = True
+            hosts.add(pid)
+            for _ in range(12):
+                if ppid not in procs or ppid in hosts or procs[ppid][1] in _HOST_STOP:
+                    break
+                hosts.add(ppid)
+                ppid = procs[ppid][0]
+    except Exception:
+        pass
+    c.update(t=now, hosts=frozenset(hosts), names=names, cli=cli)
+    return c
+
+
+def claude_hosts():
+    return _scan_claude()['hosts']
+
+
+def _is_claude_window_pid(pid):
+    """Does this window's process count as Claude? The desktop app, anything Claude Code runs inside, or
+    (while a Claude Code CLI is running) any terminal / editor, since a terminal tab can't be traced reliably."""
+    if _proc_is_claude(pid):
+        return True
+    c = _scan_claude()
+    return pid in c['hosts'] or (c['cli'] and c['names'].get(pid, '') in _TERMINALS)
+
+
 def _hwnd_pid(hwnd):
     from ctypes import wintypes
     u = ctypes.windll.user32
@@ -2461,20 +2557,21 @@ def foreground():
 
 
 def foreground_is_claude():
-    """Is the foreground window the Claude desktop app (or the pet itself, e.g. while clicked or showing its menu)?"""
+    """Is the foreground window Claude: the desktop app, a terminal / editor running Claude Code,
+    or the pet itself (e.g. while clicked or showing its menu)?"""
     if os.name != 'nt':
         return True
     try:
         fg = foreground()
         if not fg:
             return False
-        return fg[1] == os.getpid() or _proc_is_claude(fg[1])
+        return fg[1] == os.getpid() or _is_claude_window_pid(fg[1])
     except Exception:
         return True
 
 
 def find_claude_window():
-    """Find the Claude desktop app's main window (top-level, visible, titled)."""
+    """Find the topmost window running Claude (desktop app, or a terminal / editor with Claude Code in it)."""
     if os.name != 'nt':
         return None
     try:
@@ -2487,7 +2584,7 @@ def find_claude_window():
 
         def cb(hwnd, _):
             if (u.IsWindowVisible(hwnd) and not u.GetWindow(hwnd, 4) and u.GetWindowTextLengthW(hwnd) > 0
-                    and _proc_is_claude(_hwnd_pid(hwnd))):
+                    and _is_claude_window_pid(_hwnd_pid(hwnd))):
                 found.append(hwnd)
                 return False
             return True

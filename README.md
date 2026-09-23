@@ -18,6 +18,7 @@ In Claude Code:
 ```
 
 Requirements: **Windows**, Node.js, and Python 3 with tkinter (included in the standard Windows installer).
+Works with both the Claude Code CLI (in any terminal) and the Claude desktop app.
 
 ## Two skins (right-click → Skin)
 
@@ -62,7 +63,8 @@ also hands focus back to the window you were in, so it never interrupts your typ
 - **Hide for a while**: 10 / 30 / 60 minutes (handy when screen sharing).
 - **Hover** over it to see its name, level, food and mood.
 - **Ctrl + mouse wheel** over it to resize.
-- By default it only shows while the Claude window is in front (toggle in Settings).
+- By default it only shows while Claude is in front: the Claude desktop app, or a terminal / editor running the
+  Claude Code CLI (Windows Terminal, PowerShell, VS Code, Cursor, JetBrains IDEs...). Toggle it in Settings.
 
 ## Commands
 
