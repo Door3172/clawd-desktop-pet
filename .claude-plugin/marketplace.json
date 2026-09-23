@@ -1,0 +1,11 @@
+{
+  "name": "pet-marketplace",
+  "owner": { "name": "Door3172" },
+  "plugins": [
+    {
+      "name": "claude-pet",
+      "source": "./claude-pet",
+      "description": "Clawd desktop pet: an unofficial fan-made pet that wanders your screen and reacts to Claude Code"
+    }
+  ]
+}

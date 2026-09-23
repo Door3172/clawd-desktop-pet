@@ -1,0 +1,22 @@
+[
+  {"id": "first_feed", "name": {"en": "First Bite", "zh-TW": "第一口飯"}, "desc": {"en": "Feed it for the first time", "zh-TW": "第一次餵食"}, "stat": "fed", "goal": 1},
+  {"id": "gourmet", "name": {"en": "Gourmet", "zh-TW": "美食家"}, "desc": {"en": "Feed it 50 times", "zh-TW": "餵食 50 次"}, "stat": "fed", "goal": 50},
+  {"id": "playmate", "name": {"en": "Playmate", "zh-TW": "好玩伴"}, "desc": {"en": "Play 20 times", "zh-TW": "陪玩 20 次"}, "stat": "played", "goal": 20},
+  {"id": "petter", "name": {"en": "Pet Master", "zh-TW": "摸摸達人"}, "desc": {"en": "Pet it 100 times", "zh-TW": "摸摸 100 次"}, "stat": "pets", "goal": 100},
+  {"id": "helper", "name": {"en": "Little Helper", "zh-TW": "小幫手"}, "desc": {"en": "Claude uses tools 100 times", "zh-TW": "Claude 使用工具 100 次"}, "stat": "tools", "goal": 100},
+  {"id": "tool_fan", "name": {"en": "Tool Fanatic", "zh-TW": "工具狂"}, "desc": {"en": "Claude uses tools 1,000 times", "zh-TW": "Claude 使用工具 1,000 次"}, "stat": "tools", "goal": 1000},
+  {"id": "automaton", "name": {"en": "Automation Master", "zh-TW": "自動化大師"}, "desc": {"en": "Claude uses tools 10,000 times", "zh-TW": "Claude 使用工具 10,000 次"}, "stat": "tools", "goal": 10000},
+  {"id": "qa100", "name": {"en": "Hundred Answers", "zh-TW": "百問百答"}, "desc": {"en": "Claude finishes 100 replies", "zh-TW": "Claude 完成 100 次回答"}, "stat": "turns", "goal": 100},
+  {"id": "regular", "name": {"en": "Old Friend", "zh-TW": "老朋友"}, "desc": {"en": "Open Claude Code 50 times", "zh-TW": "開啟 Claude Code 50 次"}, "stat": "sessions", "goal": 50},
+  {"id": "week", "name": {"en": "Week Together", "zh-TW": "一週不見不散"}, "desc": {"en": "Meet 7 days in a row", "zh-TW": "連續 7 天見面"}, "stat": "maxStreak", "goal": 7},
+  {"id": "month", "name": {"en": "Month-long Bond", "zh-TW": "一個月的羈絆"}, "desc": {"en": "Meet 30 days in a row", "zh-TW": "連續 30 天見面"}, "stat": "maxStreak", "goal": 30},
+  {"id": "lv5", "name": {"en": "Growing Up", "zh-TW": "長大了"}, "desc": {"en": "Reach Lv.5", "zh-TW": "升到 Lv.5"}, "stat": "level", "goal": 5},
+  {"id": "lv10", "name": {"en": "Coronation", "zh-TW": "加冕"}, "desc": {"en": "Reach Lv.10 (unlocks the crown)", "zh-TW": "升到 Lv.10（解鎖皇冠配件）"}, "stat": "level", "goal": 10},
+  {"id": "lv20", "name": {"en": "Legendary Clawd", "zh-TW": "傳說中的 Clawd"}, "desc": {"en": "Reach Lv.20", "zh-TW": "升到 Lv.20"}, "stat": "level", "goal": 20},
+  {"id": "marathon", "name": {"en": "Marathon", "zh-TW": "馬拉松"}, "desc": {"en": "One Claude reply takes over 10 minutes", "zh-TW": "Claude 單次回答超過 10 分鐘"}, "stat": "longestTurnSec", "goal": 600},
+  {"id": "flyer", "name": {"en": "Flying Clawd", "zh-TW": "飛天 Clawd"}, "desc": {"en": "Throw it 10 times", "zh-TW": "把牠丟出去 10 次"}, "stat": "throws", "goal": 10},
+  {"id": "striker", "name": {"en": "Striker", "zh-TW": "足球小將"}, "desc": {"en": "Play kick-the-ball 30 times", "zh-TW": "陪牠踢球 30 次"}, "stat": "kicks", "goal": 30},
+  {"id": "tomato", "name": {"en": "Tomato Master", "zh-TW": "番茄達人"}, "desc": {"en": "Finish 10 pomodoros", "zh-TW": "完成 10 個番茄鐘"}, "stat": "pomodoros", "goal": 10},
+  {"id": "night_owl", "name": {"en": "Night Owl", "zh-TW": "夜貓子"}, "desc": {"en": "Talk to Claude between midnight and 5 AM", "zh-TW": "凌晨 0～5 點還在找 Claude"}, "stat": "lateNight", "goal": 1, "hidden": true},
+  {"id": "annoying", "name": {"en": "Poke Monster", "zh-TW": "戳戳怪"}, "desc": {"en": "Poke it until it gets angry", "zh-TW": "把牠戳到生氣"}, "stat": "annoyed", "goal": 1, "hidden": true}
+]

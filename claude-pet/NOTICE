@@ -1,0 +1,18 @@
+Third-party content used by this plugin:
+
+1) Pixel skin sprite sheet: assets/clawd-sprites.png
+   Source: renderer/spritesheet.webp from https://github.com/shigure0110/clawd-pet
+   (losslessly converted to PNG so tkinter can load it; the artwork is unmodified).
+   License: MIT, full text in assets/LICENSE.clawd-pet.
+   That project states that "Claw'd" is Anthropic's mascot and that the work is an unofficial, independently
+   drawn tribute, not affiliated with or endorsed by Anthropic. The same applies to this plugin: it is a
+   non-commercial fan work for personal use and must not be presented as an official product.
+
+2) The borderless, transparent, always-on-top window technique (pure tkinter) was inspired by
+   Mochi Desktop Pet, https://github.com/m18023318493-sys/mochi-desktop-pet
+   (MIT, Copyright (c) 2026 m18023318493-sys). No source code was copied.
+
+All other code (scripts/pet.js, and the chibi Clawd drawing and animation system in scripts/pet_window.py)
+was written for this project and is released under the MIT license in the repository's LICENSE file.
+
+Clawd and Claude are trademarks of Anthropic, PBC. This project is not affiliated with Anthropic.
