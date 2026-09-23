@@ -18,14 +18,34 @@ Supports **English** and **繁體中文** (auto-detected, switchable any time).
 
 ## Install
 
-In Claude Code:
+### 1. Prerequisites (Windows only)
+
+| You need | Check | Install if missing |
+| --- | --- | --- |
+| Windows 10 / 11 | | macOS and Linux aren't supported yet |
+| Node.js | `node --version` | `winget install OpenJS.NodeJS.LTS` |
+| Python 3 with tkinter | `python -c "import tkinter"` | `winget install Python.Python.3.13` |
+
+The Python installer from python.org or winget includes tkinter. If you install from python.org, keep
+"tcl/tk and IDLE" ticked. Restart your terminal after installing so the new commands are found.
+
+### 2. Add the plugin
+
+In a Claude Code session, run:
 
 ```
 /plugin marketplace add Door3172/clawd-desktop-pet
 /plugin install claude-pet@pet-marketplace
 ```
 
-Requirements: **Windows**, Node.js, and Python 3 with tkinter (included in the standard Windows installer).
+Plugins are installed per user, so this also enables the pet in the Claude desktop app.
+
+### 3. Restart Claude Code
+
+Clawd drops in from the top of the screen when a new session starts. By default it only shows while Claude is
+in front, so switch back to Claude if you don't see it.
+
+Nothing showing up? Run `/claude-pet:pet doctor` (see [Troubleshooting](#troubleshooting)).
 
 ## Two skins (right-click → Skin)
 
@@ -91,9 +111,42 @@ also hands focus back to the window you were in, so it never interrupts your typ
 | `/claude-pet:pet lang en` / `zh-TW` / `auto` | Language |
 | `/claude-pet:pet show` / `hide` | Bring out / put away the pet |
 | `/claude-pet:pet settings` | Show all settings |
+| `/claude-pet:pet doctor` | Check the setup when the pet doesn't appear |
 | `/claude-pet:pet peek off` | Other switches: focus / peek / sound / chatter / stay / follow / dnd (on/off) |
 | `/claude-pet:pet break 45` / `break off` | Break reminder interval |
 | `/claude-pet:pet autostart off` | Don't bring out the pet when Claude Code starts |
+
+## Troubleshooting
+
+Run **`/claude-pet:pet doctor`** first. It checks your OS, Node.js, Python and tkinter, whether the pet is
+running, and shows recent errors, each with a suggested fix.
+
+| Problem | Fix |
+| --- | --- |
+| Clawd never appears | By default it only shows while Claude is in front. Try `/claude-pet:pet show`, or `/claude-pet:pet focus off` to keep it on screen. |
+| "Python 3 was not found" | Install Python (see above) and restart Claude Code. The Microsoft Store `python.exe` shortcut that ships with Windows is not a real Python. |
+| `/claude-pet:pet` fails with "node is not recognized" | Install Node.js (see above), then restart Claude Code. |
+| It stopped reacting to Claude | Restart Claude Code after installing or updating the plugin so the hooks reload. |
+| Something else | Check `~/.claude/pet/desktop.log` and open an issue with its contents. |
+
+## Update & uninstall
+
+Update:
+
+```
+/plugin marketplace update pet-marketplace
+/plugin update claude-pet@pet-marketplace
+```
+
+Uninstall:
+
+```
+/claude-pet:pet hide
+/plugin uninstall claude-pet@pet-marketplace
+/plugin marketplace remove pet-marketplace
+```
+
+Your pet's save data stays in `~/.claude/pet/`. Delete that folder to remove it too.
 
 ## Files
 

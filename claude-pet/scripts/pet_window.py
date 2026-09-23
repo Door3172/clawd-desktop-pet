@@ -27,6 +27,7 @@ DIR = os.environ.get('CLAUDE_PET_DIR') or os.path.join(os.path.expanduser('~'), 
 STATE = os.path.join(DIR, 'state.json')
 PREFS = os.path.join(DIR, 'prefs.json')
 QUIT = os.path.join(DIR, 'quit')
+ALIVE = os.path.join(DIR, 'alive')         # heartbeat for /pet doctor
 LOG = os.path.join(DIR, 'desktop.log')
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -2254,6 +2255,11 @@ class PetApp:
             self.next_slow = now + 5
             self.check_timer()
             self.check_break(now)
+            try:
+                with open(ALIVE, 'w') as f:
+                    f.write(str(now_ms()))
+            except OSError:
+                pass
         if now > self.next_fg:
             self.next_fg = now + 0.25
             self.update_visibility(now)

@@ -269,29 +269,111 @@ function langName(pref) {
 }
 
 // ---- Desktop window
-function findPython() {
-  for (const exe of ['pythonw', 'pyw', 'python']) {
-    try {
-      const out = execFileSync('where', [exe], { encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] });
-      const first = out.split(/\r?\n/)[0].trim();
-      if (first) return first;
-    } catch {}
-  }
-  return null;
-}
-
-function launchDesktop() {
-  const py = findPython();
-  if (!py) return false;
+const PY_CACHE = path.join(DIR, 'python.json');
+const ALIVE = path.join(DIR, 'alive');
+const IS_WINDOWS = process.platform === 'win32';
+// fs.existsSync() is false for Microsoft Store app-execution aliases (e.g. Store Python); lstat sees them
+const exists = (f) => {
   try {
-    fs.rmSync(QUIT, { force: true });
-    const child = spawn(py, [WINDOW_PY], { detached: true, stdio: 'ignore', windowsHide: true });
-    child.on('error', () => {});
-    child.unref();
+    fs.lstatSync(f);
     return true;
   } catch {
     return false;
   }
+};
+const PROBE = 'import sys\ntry:\n import tkinter\n tk = 1\nexcept Exception:\n tk = 0\nprint(sys.executable)\nprint(sys.version.split()[0])\nprint(tk)';
+
+// Actually run each candidate: this skips the Microsoft Store "python.exe" stub (it exits with an error)
+// and tells us whether tkinter is available.
+function probePython() {
+  let best = null;
+  for (const [cmd, args] of [['python', []], ['python3', []], ['py', ['-3']]]) {
+    try {
+      const out = execFileSync(cmd, [...args, '-c', PROBE], {
+        encoding: 'utf8',
+        windowsHide: true,
+        timeout: 8000,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+      const [exe, version, tk] = out.trim().split(/\r?\n/).map((s) => s.trim());
+      if (!exe || !exists(exe)) continue;
+      const found = { exe, version, tk: tk === '1' };
+      if (found.tk) return found;
+      best = best || found;
+    } catch {}
+  }
+  return best;
+}
+
+function findPython(fresh = false) {
+  if (!fresh) {
+    const c = readJson(PY_CACHE, null);
+    if (c && c.tk && Date.now() - c.at < 86400000 && exists(c.exe)) return c;
+  }
+  const found = probePython();
+  if (found) {
+    try {
+      fs.mkdirSync(DIR, { recursive: true });
+      fs.writeFileSync(PY_CACHE, JSON.stringify({ ...found, at: Date.now() }));
+    } catch {}
+  }
+  return found;
+}
+
+// Returns 'ok' | 'unsupported' | 'no-python' | 'no-tk'
+function launchDesktop() {
+  if (!IS_WINDOWS) return 'unsupported';
+  const py = findPython();
+  if (!py) return 'no-python';
+  if (!py.tk) return 'no-tk';
+  // pythonw.exe (next to python.exe) runs without a console window
+  const w = path.join(path.dirname(py.exe), 'pythonw.exe');
+  try {
+    fs.rmSync(QUIT, { force: true });
+    const child = spawn(exists(w) ? w : py.exe, [WINDOW_PY], { detached: true, stdio: 'ignore', windowsHide: true });
+    child.on('error', () => {});
+    child.unref();
+    return 'ok';
+  } catch {
+    return 'no-python';
+  }
+}
+
+function launchNote(status) {
+  return {
+    ok: t('cli.show'),
+    unsupported: t('cli.unsupported'),
+    'no-python': t('cli.no_python'),
+    'no-tk': t('cli.no_tk'),
+  }[status];
+}
+
+function doctorText() {
+  const ok = (b) => (b ? '✅' : '❌');
+  const lines = [t('doctor.title')];
+  lines.push(`${ok(IS_WINDOWS)} ${t('doctor.os', { os: `${process.platform} ${os.release()}` })}`);
+  if (!IS_WINDOWS) lines.push('   ' + t('cli.unsupported'));
+  lines.push(`✅ ${t('doctor.node', { ver: process.version })}`);
+  const py = IS_WINDOWS ? findPython(true) : probePython();
+  if (!py) {
+    lines.push(`❌ ${t('doctor.py_missing')}`, '   ' + t('doctor.fix_python'));
+  } else {
+    lines.push(`✅ ${t('doctor.py_ok', { ver: py.version, exe: py.exe })}`);
+    lines.push(`${ok(py.tk)} ${t(py.tk ? 'doctor.tk_ok' : 'doctor.tk_missing')}`);
+    if (!py.tk) lines.push('   ' + t('doctor.fix_python'));
+  }
+  let alive = false;
+  try {
+    alive = Date.now() - fs.statSync(ALIVE).mtimeMs < 20000;
+  } catch {}
+  lines.push(`${ok(alive)} ${t(alive ? 'doctor.running' : 'doctor.not_running')}`);
+  if (alive && getPrefs().only_claude !== false) lines.push('   ' + t('doctor.focus_hint'));
+  try {
+    const log = fs.readFileSync(path.join(DIR, 'desktop.log'), 'utf8').trim().split(/\r?\n/).slice(-3);
+    if (log[0]) lines.push(t('doctor.log', { file: path.join(DIR, 'desktop.log') }), ...log.map((l) => '   ' + l.slice(0, 160)));
+  } catch {}
+  lines.push('', t('doctor.data', { dir: DIR }));
+  return lines.join('\n');
 }
 
 function hideDesktop() {
@@ -476,7 +558,11 @@ function command(cmd, args) {
       break;
     }
     case 'show':
-      note = t(launchDesktop() ? 'cli.show' : 'cli.no_python');
+      note = launchNote(launchDesktop());
+      break;
+    case 'doctor':
+      note = doctorText();
+      showSummary = false;
       break;
     case 'hide':
       hideDesktop();
@@ -539,10 +625,16 @@ function hook(event) {
   touchDay(p);
 
   if (event === 'SessionStart') {
-    if (p.autostart) launchDesktop();
+    const status = p.autostart ? launchDesktop() : 'ok';
     if (!input.source || input.source === 'startup' || input.source === 'resume') bump(p, 'sessions');
     const streak = p.stats.streak > 1 ? t('hook.streak', { n: p.stats.streak }) : '';
-    if (p.hunger < 25) msg = t('hook.hungry', { name: p.name });
+    // Tell the user why the pet can't appear instead of failing silently
+    if (status === 'unsupported') {
+      if (!p.warnedPlatform) msg = t('hook.unsupported');
+      p.warnedPlatform = true;
+    } else if (status === 'no-python') msg = t('hook.no_python');
+    else if (status === 'no-tk') msg = t('hook.no_tk');
+    else if (p.hunger < 25) msg = t('hook.hungry', { name: p.name });
     else if (p.mood < 30) msg = t('hook.bored', { name: p.name });
     else msg = t('hook.hello', { name: p.name, lv: levelOf(p.xp), streak });
   } else if (event === 'UserPromptSubmit') {

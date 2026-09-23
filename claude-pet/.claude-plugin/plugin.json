@@ -1,6 +1,6 @@
 {
   "name": "claude-pet",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Unofficial Clawd desktop pet: wanders your screen, types while Claude works, celebrates when it's done, pops up when Claude needs you. Pixel and chibi skins, pomodoro, achievements, English / 繁體中文.",
   "author": { "name": "Door3172" },
   "license": "MIT"

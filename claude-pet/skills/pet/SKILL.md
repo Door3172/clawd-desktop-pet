@@ -1,7 +1,7 @@
 ---
 name: pet
 description: Look after your Clawd desktop pet (status, stats, achievements, feed, play, tricks, pomodoro timer, accessories, skin, language and settings)
-argument-hint: "[status | stats | achievements | feed | play | trick <name> | say <text> | timer <min>|off | hat <accessory> | name <name> | skin pixel|chibi | color <color> | lang en|zh-TW|auto | show | hide | settings | help]"
+argument-hint: "[status | stats | achievements | feed | play | trick <name> | say <text> | timer <min>|off | hat <accessory> | name <name> | skin pixel|chibi | color <color> | lang en|zh-TW|auto | show | hide | settings | doctor | help]"
 disable-model-invocation: true
 allowed-tools: Bash(node:*)
 ---

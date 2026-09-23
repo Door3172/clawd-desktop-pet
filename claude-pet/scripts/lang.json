@@ -200,7 +200,7 @@
     "cli.off": "off",
     "cli.on": "on",
     "cli.show": "Your pet is out! (It won't appear twice if it's already on screen)",
-    "cli.no_python": "Python not found, can't start the desktop pet.",
+    "cli.no_python": "Python 3 was not found, so the desktop pet can't start. Install Python 3 (tkinter included): winget install Python.Python.3.13  (or python.org, tick \"tcl/tk\"), then restart Claude Code.",
     "cli.hide": "Pet put away. Use /pet show when you miss it.",
     "cli.autostart_set": "Opening Claude Code {will} bring out the pet.",
     "cli.autostart_cur": "Now: opening Claude Code {will} bring out the pet. Usage: /pet autostart on|off",
@@ -231,7 +231,26 @@
     "hook.hello": "🐾 {name} Lv.{lv} has been waiting for you{streak}",
     "hook.streak": " (day {n} in a row)",
 
-    "help": "Commands (/claude-pet:pet <command>)\n  status              status (default)\n  stats               stats (today / total)\n  achievements        achievement list\n  feed / play         feed / play\n  trick <name>        tricks: {tricks}\n  say <text>          make it say something\n  timer <min> [label] pomodoro; timer off to cancel; timer to check\n  name <name>         rename\n  skin pixel|chibi    switch skin\n  color <color>       chibi color: {colors}\n  hat <accessory>     accessory: {accs}\n  lang en|zh-TW|auto  language\n  show / hide         bring out / put away the pet\n  autostart on|off    bring out the pet when Claude Code starts\n  settings            show all settings\n  {toggles} on|off\n  break <min>|off     break reminder interval (default 60)"
+    "cli.no_tk": "Python was found but tkinter is missing, so the desktop pet can't start. Install Python 3 (tkinter included): winget install Python.Python.3.13  (or python.org, tick \"tcl/tk\"), then restart Claude Code.",
+    "cli.unsupported": "The desktop pet currently runs on Windows only. Commands like /pet status still work.",
+    "hook.no_python": "🐾 Clawd can't appear: Python 3 was not found. Install Python 3 (tkinter included): winget install Python.Python.3.13  (or python.org, tick \"tcl/tk\"), then restart Claude Code. Run /claude-pet:pet doctor for details.",
+    "hook.no_tk": "🐾 Clawd can't appear: Python is installed but tkinter is missing. Install Python 3 (tkinter included): winget install Python.Python.3.13  (or python.org, tick \"tcl/tk\"), then restart Claude Code.",
+    "hook.unsupported": "🐾 claude-pet: the desktop pet currently runs on Windows only (this message is shown once).",
+    "doctor.title": "🩺 claude-pet doctor",
+    "doctor.os": "Operating system: {os}",
+    "doctor.node": "Node.js {ver}",
+    "doctor.py_ok": "Python {ver}: {exe}",
+    "doctor.py_missing": "Python 3 not found (the Microsoft Store \"python.exe\" shortcut doesn't count)",
+    "doctor.fix_python": "Install Python 3 (tkinter included): winget install Python.Python.3.13  (or python.org, tick \"tcl/tk\"), then restart Claude Code.",
+    "doctor.tk_ok": "tkinter available",
+    "doctor.tk_missing": "tkinter missing",
+    "doctor.running": "The desktop pet is running",
+    "doctor.not_running": "The desktop pet is not running (start it with /claude-pet:pet show)",
+    "doctor.focus_hint": "It only shows while Claude is in front. Use /claude-pet:pet focus off to keep it on screen.",
+    "doctor.log": "Recent errors ({file}):",
+    "doctor.data": "Pet data folder: {dir}",
+
+    "help": "Commands (/claude-pet:pet <command>)\n  status              status (default)\n  stats               stats (today / total)\n  achievements        achievement list\n  feed / play         feed / play\n  trick <name>        tricks: {tricks}\n  say <text>          make it say something\n  timer <min> [label] pomodoro; timer off to cancel; timer to check\n  name <name>         rename\n  skin pixel|chibi    switch skin\n  color <color>       chibi color: {colors}\n  hat <accessory>     accessory: {accs}\n  lang en|zh-TW|auto  language\n  show / hide         bring out / put away the pet\n  autostart on|off    bring out the pet when Claude Code starts\n  settings            show all settings\n  doctor              check the setup when the pet doesn't appear\n  {toggles} on|off\n  break <min>|off     break reminder interval (default 60)"
   },
 
   "zh-TW": {
@@ -435,7 +454,7 @@
     "cli.off": "關",
     "cli.on": "開",
     "cli.show": "桌寵出來囉！（已經在螢幕上的話不會重複出現）",
-    "cli.no_python": "找不到 Python，無法啟動桌寵。",
+    "cli.no_python": "找不到 Python 3，桌寵無法啟動。安裝 Python 3（內含 tkinter）：winget install Python.Python.3.13（或到 python.org 下載，勾選「tcl/tk」），再重開 Claude Code。",
     "cli.hide": "桌寵收起來了，想牠時再用 /pet show。",
     "cli.autostart_set": "開啟 Claude Code 時{will}自動叫出桌寵。",
     "cli.autostart_cur": "目前：開啟時{will}自動叫出桌寵。用法：/pet autostart on|off",
@@ -466,6 +485,25 @@
     "hook.hello": "🐾 {name} Lv.{lv} 等你好久了{streak}",
     "hook.streak": "（連續第 {n} 天見面）",
 
-    "help": "可用指令（/claude-pet:pet <指令>）\n  status              狀態（預設）\n  stats               統計（今天 / 累計）\n  achievements        成就列表\n  feed / play         餵食 / 陪玩\n  trick <動作>        表演：{tricks}\n  say <文字>          讓牠說一句話\n  timer <分鐘> [名稱] 番茄鐘；timer off 取消；timer 看剩多久\n  name <名字>         改名\n  skin pixel|chibi    切換外觀\n  color <顏色>        Q 版顏色：{colors}\n  hat <配件>          配件：{accs}\n  lang en|zh-TW|auto  語言\n  show / hide         叫出 / 收起桌寵\n  autostart on|off    開啟 Claude Code 時自動叫出桌寵\n  settings            看所有設定\n  {toggles} on|off\n  break <分鐘>|off    連續使用多久提醒休息（預設 60）"
+    "cli.no_tk": "有 Python 但缺少 tkinter，桌寵無法啟動。安裝 Python 3（內含 tkinter）：winget install Python.Python.3.13（或到 python.org 下載，勾選「tcl/tk」），再重開 Claude Code。",
+    "cli.unsupported": "桌寵目前只支援 Windows。/pet status 等指令仍可使用。",
+    "hook.no_python": "🐾 Clawd 出不來：找不到 Python 3。安裝 Python 3（內含 tkinter）：winget install Python.Python.3.13（或到 python.org 下載，勾選「tcl/tk」），再重開 Claude Code。詳情請執行 /claude-pet:pet doctor。",
+    "hook.no_tk": "🐾 Clawd 出不來：有 Python 但缺少 tkinter。安裝 Python 3（內含 tkinter）：winget install Python.Python.3.13（或到 python.org 下載，勾選「tcl/tk」），再重開 Claude Code。",
+    "hook.unsupported": "🐾 claude-pet：桌寵目前只支援 Windows（這則訊息只顯示一次）。",
+    "doctor.title": "🩺 claude-pet 健康檢查",
+    "doctor.os": "作業系統：{os}",
+    "doctor.node": "Node.js {ver}",
+    "doctor.py_ok": "Python {ver}：{exe}",
+    "doctor.py_missing": "找不到 Python 3（微軟商店的「python.exe」捷徑不算）",
+    "doctor.fix_python": "安裝 Python 3（內含 tkinter）：winget install Python.Python.3.13（或到 python.org 下載，勾選「tcl/tk」），再重開 Claude Code。",
+    "doctor.tk_ok": "tkinter 可用",
+    "doctor.tk_missing": "缺少 tkinter",
+    "doctor.running": "桌寵正在執行",
+    "doctor.not_running": "桌寵沒有在執行（用 /claude-pet:pet show 叫出來）",
+    "doctor.focus_hint": "牠只在 Claude 在最前面時出現。想讓牠一直顯示：/claude-pet:pet focus off",
+    "doctor.log": "最近的錯誤（{file}）：",
+    "doctor.data": "桌寵資料夾：{dir}",
+
+    "help": "可用指令（/claude-pet:pet <指令>）\n  status              狀態（預設）\n  stats               統計（今天 / 累計）\n  achievements        成就列表\n  feed / play         餵食 / 陪玩\n  trick <動作>        表演：{tricks}\n  say <文字>          讓牠說一句話\n  timer <分鐘> [名稱] 番茄鐘；timer off 取消；timer 看剩多久\n  name <名字>         改名\n  skin pixel|chibi    切換外觀\n  color <顏色>        Q 版顏色：{colors}\n  hat <配件>          配件：{accs}\n  lang en|zh-TW|auto  語言\n  show / hide         叫出 / 收起桌寵\n  autostart on|off    開啟 Claude Code 時自動叫出桌寵\n  settings            看所有設定\n  doctor              桌寵沒出現時，檢查安裝狀況\n  {toggles} on|off\n  break <分鐘>|off    連續使用多久提醒休息（預設 60）"
   }
 }
