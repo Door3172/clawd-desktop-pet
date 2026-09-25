@@ -410,6 +410,9 @@ def draw_eye(P, cx, cy, kind, look, C, side):
         P.line([(cx + side * 8, cy - 15), (cx - side * 5, cy - 9)], ink, 2.4)
 
 
+SHADOW_COLOR = None   # solid shadow color for renders on an opaque background (tools/make_media.py)
+
+
 def draw_shadow(P, ox, sh, sx, lift, half):
     S = P.S
     sh = sh * max(0.35, 1 - lift / 150.0)
@@ -417,7 +420,7 @@ def draw_shadow(P, ox, sh, sx, lift, half):
         return
     P.cv.create_oval((ox - half * sh * abs(sx)) * S, (GROUND - 5 * sh) * S,
                      (ox + half * sh * abs(sx)) * S, (GROUND + 5 * sh) * S,
-                     fill='#000000', outline='', stipple='gray25')
+                     fill=SHADOW_COLOR or '#000000', outline='', stipple='' if SHADOW_COLOR else 'gray25')
 
 
 def draw_arms(P, po, C):

@@ -3,6 +3,11 @@
 > **Unofficial fan project.** Clawd is Anthropic's mascot. This project is not affiliated with, endorsed by,
 > or sponsored by Anthropic. It is a free, non-commercial tribute for personal use.
 
+<p align="center">
+  <img src="docs/media/demo.gif" alt="Pixel Clawd typing while Claude works, celebrating when it's done, and asking for approval" width="392">
+  <img src="docs/media/chibi.gif" alt="Chibi Clawd with accessories: waving, tumbling, getting annoyed and dancing" width="392">
+</p>
+
 A desktop pet for Claude Code: **Clawd** wanders along the bottom of your screen and reacts to what Claude is
 doing: typing while Claude works, celebrating when it finishes, and waving at you when Claude needs your approval.
 
@@ -172,6 +177,8 @@ python claude-pet/scripts/pet_window.py --force dance                  # start a
 ```
 
 Set `CLAUDE_PET_DIR` to use a separate state folder while testing.
+
+Regenerate the README GIFs and the social preview image with `python tools/make_media.py` (needs Pillow).
 
 ## Credits & license
 
