@@ -227,6 +227,27 @@ def tool_info(name):
     return 'think', name[:12]
 
 
+MAX_TASK_ROWS = 3   # task pills shown at once; the rest are folded into "+N more"
+PILL_STEP = 19      # vertical spacing between stacked task pills (logical units)
+
+
+def running_tasks(act):
+    """Sessions that are working right now (oldest first), from activity.sessions written by pet.js."""
+    n = now_ms()
+    ss = act.get('sessions')
+    if not isinstance(ss, dict):
+        return []
+    return sorted((s for s in ss.values() if isinstance(s, dict) and s.get('busyUntil', 0) > n),
+                  key=lambda s: s.get('turnStart') or 0)
+
+
+def task_caption(s, named):
+    label = tool_info(s.get('tool', ''))[1]
+    ts = s.get('turnStart', 0)
+    text = '%s %s' % (label, fmt_clock((now_ms() - ts) / 1000)) if ts else label
+    return '%s %s' % (s['name'][:8], text) if named and s.get('name') else text
+
+
 def fmt_clock(secs):
     secs = max(0, int(secs))
     if secs >= 3600:
@@ -666,7 +687,10 @@ def pill(P, cx, cy, text, color, icon=None):
 def think_bubble(P, cx, ybot, t, caption=None):
     S = P.S
     if caption:
-        pill(P, cx, ybot - 36, caption, '#9A9AAA')
+        # One pill per running task, stacked upward; a single task keeps the original spot
+        lines = [caption] if isinstance(caption, str) else caption
+        for i, line in enumerate(lines):
+            pill(P, cx, ybot - 36 - PILL_STEP * (len(lines) - 1 - i), line, '#9A9AAA')
     P.cell(cx + 8, ybot + 4, 2.5, 2.5, '#FFFFFF', '#2B2B33', 1.2)
     P.cell(cx + 4, ybot + 10, 1.6, 1.6, '#FFFFFF', '#2B2B33', 1.2)
     P.cpoly([(cx - 30, ybot - 26), (cx + 30, ybot - 26), (cx + 34, ybot - 12), (cx + 30, ybot),
@@ -2324,11 +2348,20 @@ class PetApp:
     def render(self, now):
         b = self.cur
         t = now - b['t0']
+        rows = 0
         if b['name'] == 'work':
             act = self.st.get('activity', {})
-            b['cat'], label = tool_info(act.get('tool', ''))
-            ts = act.get('turnStart', 0)
-            b['caption'] = '%s %s' % (label, fmt_clock((now_ms() - ts) / 1000)) if ts else label
+            tasks = running_tasks(act)
+            if tasks:
+                b['cat'] = tool_info(tasks[0].get('tool', ''))[0]
+                b['caption'] = [task_caption(s, len(tasks) > 1) for s in tasks[:MAX_TASK_ROWS]]
+                if len(tasks) > MAX_TASK_ROWS:
+                    b['caption'][-1] = T('tool.more', n=len(tasks) - MAX_TASK_ROWS + 1)
+            else:
+                b['cat'], label = tool_info(act.get('tool', ''))
+                ts = act.get('turnStart', 0)
+                b['caption'] = ['%s %s' % (label, fmt_clock((now_ms() - ts) / 1000)) if ts else label]
+            rows = len(b['caption'])
         po = self.actor.pose(b, t)
         po['acc'] = self.st.get('accessory', 'none')
         if self.msg:
@@ -2348,7 +2381,7 @@ class PetApp:
             left = (tm.get('end', 0) - now_ms()) / 1000
             top = GROUND - po['lift'] - 84 * po['sy']
             kinds = {f[0] for f in po['fx']}
-            y = top - 16 - (48 if 'think' in kinds else 40 if 'bubble' in kinds else 0)
+            y = top - 16 - (48 + PILL_STEP * max(0, rows - 1) if 'think' in kinds else 40 if 'bubble' in kinds else 0)
             pill(self.P, LW / 2 + po['ox'], max(12, y), fmt_clock(left + 0.999), '#E5484D', 'tomato')
 
     def run(self):

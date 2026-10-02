@@ -615,6 +615,30 @@ function readInput() {
   }
 }
 
+// Each Claude session works on its own task: track them separately in activity.sessions so one session
+// finishing doesn't end the others' "busy" state, and the window can list every running task.
+function session(act, input) {
+  if (!act.sessions || typeof act.sessions !== 'object') act.sessions = {};
+  const id = String(input.session_id || 'default');
+  const s = act.sessions[id] || (act.sessions[id] = {});
+  if (input.cwd) s.name = path.basename(String(input.cwd)).slice(0, 24);
+  return s;
+}
+
+// Drop finished sessions and keep the legacy busyUntil (= latest running task) in sync
+function settleSessions(act, now) {
+  let busy = 0;
+  for (const [id, s] of Object.entries(act.sessions || {})) {
+    if ((s.busyUntil || 0) > now) busy = Math.max(busy, s.busyUntil);
+    else delete act.sessions[id];
+  }
+  act.busyUntil = busy;
+  if (!busy) {
+    act.tool = '';
+    act.turnStart = 0;
+  }
+}
+
 function hook(event) {
   const input = readInput(); // always drain stdin to avoid a broken pipe
   const p = load();
@@ -638,28 +662,33 @@ function hook(event) {
     else if (p.mood < 30) msg = t('hook.bored', { name: p.name });
     else msg = t('hook.hello', { name: p.name, lv: levelOf(p.xp), streak });
   } else if (event === 'UserPromptSubmit') {
-    act.busyUntil = now + BUSY_MS;
+    const s = session(act, input);
+    s.busyUntil = now + BUSY_MS;
+    s.turnStart = now;
+    s.tools = 0;
+    s.tool = '';
     act.turnStart = now;
-    act.turnTools = 0;
     act.tool = '';
     bump(p, 'prompts');
     bumpToday(p, 'prompts');
     if (new Date().getHours() < 5) bump(p, 'lateNight');
   } else if (event === 'PreToolUse') {
-    act.busyUntil = now + BUSY_MS;
-    act.tool = String(input.tool_name || '');
+    const s = session(act, input);
+    s.busyUntil = now + BUSY_MS;
+    s.turnStart = s.turnStart || now;
+    s.tool = String(input.tool_name || '');
+    s.tools = (s.tools || 0) + 1;
+    act.tool = s.tool;
     act.toolAt = now;
-    act.turnTools = (act.turnTools || 0) + 1;
     bump(p, 'tools');
     bumpToday(p, 'tools');
     addXp(p, 1);
   } else if (event === 'Stop') {
-    act.busyUntil = 0;
-    act.tool = '';
+    const s = session(act, input);
+    const ms = s.turnStart && now - s.turnStart < 6 * 3600000 ? now - s.turnStart : 0;
+    act.lastTurn = { ms, tools: s.tools || 0 };
+    s.busyUntil = 0;
     act.celebrateAt = now;
-    const ms = act.turnStart && now - act.turnStart < 6 * 3600000 ? now - act.turnStart : 0;
-    act.lastTurn = { ms, tools: act.turnTools || 0 };
-    act.turnStart = 0;
     bump(p, 'turns');
     bumpToday(p, 'turns');
     p.stats.longestTurnSec = Math.max(p.stats.longestTurnSec || 0, Math.round(ms / 1000));
@@ -672,10 +701,11 @@ function hook(event) {
     const idle = type === 'idle_prompt' || /waiting for your input/.test(m);
     if (!idle && (type === '' || type === 'permission_prompt' || type === 'elicitation_dialog')) act.alertAt = now;
   } else if (event === 'SessionEnd') {
-    act.busyUntil = 0;
+    session(act, input).busyUntil = 0;
     if (input.reason !== 'clear') act.byeAt = now;
   }
 
+  settleSessions(act, now);
   checkAchievements(p);
   save(p);
   if (msg) process.stdout.write(JSON.stringify({ systemMessage: msg }));

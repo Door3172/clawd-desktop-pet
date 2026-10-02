@@ -38,6 +38,7 @@
     "tool.agent": "Delegating",
     "tool.todo": "Planning",
     "tool.skill": "Using a skill",
+    "tool.more": "+{n} more tasks",
 
     "b.yay": "Yay!",
     "b.pet": "Hehe~",
@@ -292,6 +293,7 @@
     "tool.agent": "派小幫手",
     "tool.todo": "列待辦",
     "tool.skill": "用技能",
+    "tool.more": "還有 {n} 個任務",
 
     "b.yay": "耶！",
     "b.pet": "嘿嘿~",

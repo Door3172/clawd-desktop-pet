@@ -65,7 +65,7 @@ Both skins can wear **accessories**: party hat, bow, sprout, and a crown (unlock
 
 | Event | Reaction |
 | --- | --- |
-| Claude is working | Types on a laptop (or reads a book while reading, searching or browsing), with a caption showing what it's doing and for how long, e.g. "Searching 1:24" |
+| Claude is working | Types on a laptop (or reads a book while reading, searching or browsing), with a caption showing what it's doing and for how long, e.g. "Searching 1:24". With several sessions running at once, each task gets its own caption tagged with its project folder (up to three, extras fold into "+N more tasks") |
 | Claude finishes | Jumps and throws confetti. Long replies show "Done! Took 2:13", and very long ones get a dance |
 | Claude needs permission | Waves and shouts "Needs your OK!" (plain "waiting for input" notices are ignored) |
 | Level up / achievement | Spins with sparkles and announces it |
