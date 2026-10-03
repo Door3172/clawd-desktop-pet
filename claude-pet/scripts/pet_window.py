@@ -1391,10 +1391,26 @@ class PetApp:
         self.root.after(TICK_MS, self.tick)
 
     # ---------- environment
-    def work_area(self):
+    def work_area(self, x=None, y=None):
+        """Work area (minus taskbar) of the monitor containing (x, y); the primary monitor if omitted."""
         if os.name == 'nt':
             try:
                 from ctypes import wintypes
+                if x is not None and y is not None:
+                    class MONITORINFO(ctypes.Structure):
+                        _fields_ = [('cbSize', wintypes.DWORD), ('rcMonitor', wintypes.RECT),
+                                    ('rcWork', wintypes.RECT), ('dwFlags', wintypes.DWORD)]
+                    u = ctypes.windll.user32
+                    u.MonitorFromPoint.argtypes = [wintypes.POINT, wintypes.DWORD]
+                    u.MonitorFromPoint.restype = wintypes.HANDLE
+                    u.GetMonitorInfoW.argtypes = [wintypes.HANDLE, ctypes.POINTER(MONITORINFO)]
+                    # y is the ground line, which can sit on the monitor's bottom edge: look slightly above it
+                    hm = u.MonitorFromPoint(wintypes.POINT(int(x), int(y) - 4), 2)  # MONITOR_DEFAULTTONEAREST
+                    mi = MONITORINFO()
+                    mi.cbSize = ctypes.sizeof(mi)
+                    if hm and u.GetMonitorInfoW(hm, ctypes.byref(mi)):
+                        w = mi.rcWork
+                        return w.left, w.top, w.right, w.bottom
                 rc = wintypes.RECT()
                 if ctypes.windll.user32.SystemParametersInfoW(48, 0, ctypes.byref(rc), 0):
                     return rc.left, rc.top, rc.right, rc.bottom
@@ -2012,6 +2028,9 @@ class PetApp:
             self.dragging = True
             self.start('held')
         if self.dragging:
+            # Follow the cursor across monitors: ground line and bounds come from the monitor under it
+            self.wa = self.work_area(e.x_root, e.y_root)
+            self.next_area = time.time() + 3
             nx = self.press[2] + dx
             ny = min(self.press[3] + dy, self.gy)
             n = time.time()
@@ -2271,7 +2290,7 @@ class PetApp:
             self.root.attributes('-topmost', True)
         if now > self.next_area:
             self.next_area = now + 3
-            self.wa = self.work_area()
+            self.wa = self.work_area(self.x, self.y)
         if now > self.next_decay:
             self.next_decay = now + 30
             self.mutate(lambda st: None)
